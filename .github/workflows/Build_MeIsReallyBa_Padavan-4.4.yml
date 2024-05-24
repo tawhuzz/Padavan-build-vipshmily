@@ -6,40 +6,40 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "MI-R4A"
+        default: "NETGEAR-BZV K2P"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
         default: 'yes'
         required: false
 env:
-  TNAME: "${{ github.event.inputs.production }}"
+  TNAME: ${{ github.event.inputs.production }}
   REPOSITORY_URL: https://github.com/MeIsReallyBa/padavan-4.4.git
         
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: hendrikmuhs/ccache-action@v1.2
+    - uses: actions/checkout@main
+    - uses: hendrikmuhs/ccache-action@main
       with:
-          key: "${{ github.event.inputs.production }}"
-    - uses: actions/setup-go@v5
+          key: ${{ github.event.inputs.production }}-4.4
+    - uses: actions/setup-go@main
       with:
-          go-version: '1.21'
+          go-version: '1.22'
           check-latest: true
           cache: false
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@main
       with:
-          node-version: 18
+          node-version: 20
           check-latest: true          
     - name: Generate version number
       run: |
         whoami
         id
         echo input parameters received:
-        echo "${{ github.event.inputs.production }}"
-        echo "${{ github.event.inputs.release }}"
+        echo $TNAME
+        echo ${{ github.event.inputs.release }}
         echo 
         echo 当前目录:$(pwd)
         # 版本号,用日期
@@ -47,7 +47,7 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
         echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
-        val1="${{ github.event.inputs.production }}"
+        val1=$TNAME
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_4.4_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
@@ -72,14 +72,6 @@ jobs:
         mkdir -p /opt/images/                        
     - name: Build Firmware
       run: |
-        if [ -f public/adguardhome.Makefile ] ; then
-        mv -f public/adguardhome.Makefile ${{ env.DIR }}/trunk/user/adguardhome/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 1
-        fi
-        #cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
-        cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
         cd ${{ env.DIR }}/trunk
         for m in $TNAME;
         do
@@ -182,7 +174,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_MTR=n" >> .config #MTR
         #CPU超频
         echo "CONFIG_FIRMWARE_INCLUDE_OC=y" >> .config #CPU超频开关
-        echo 'CONFIG_FIRMWARE_MT7621_OC="0x3B2"' >> .config #此处填写对应频率的十六进制：1000Mhz=0x312 1100Mhz=0x362 1120Mhz=0x372 1200Mhz=0x3B2
+        echo 'CONFIG_FIRMWARE_MT7621_OC="0x392"' >> .config #此处填写对应频率的十六进制：1000Mhz=0x312 1100Mhz=0x362 1120Mhz=0x372 1200Mhz=0x3B2
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：
@@ -219,7 +211,7 @@ jobs:
         md5sum *.trx >> /opt/images/readme.txt || echo
         ls -l              
     - name : Upload images to Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@main
       if: true
       with:
         name: ${{ env.NAME }}
