@@ -26,12 +26,12 @@ jobs:
         key: ${{ github.event.inputs.production }}-4.4
     - uses: actions/setup-go@main
       with:
-        go-version: '1.22'
+        go-version: '1.23'
         check-latest: true
         cache: false
     - uses: actions/setup-node@main
       with:
-        node-version: 20
+        node-version: 22
         check-latest: true          
     - name: Generate version number
       run: |
@@ -227,7 +227,7 @@ jobs:
         path: /opt/images        
     - name: Upload images to Releases
       if: ${{ github.event.inputs.release == 'yes' }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@master
       with:
         name: ${{ env.NAME }}
         tag_name: ${{ env.TAG }}
