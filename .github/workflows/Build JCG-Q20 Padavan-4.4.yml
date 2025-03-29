@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@main
     - uses: hendrikmuhs/ccache-action@main
       with:
-        key: ${{ github.event.inputs.production }}-4.4
+        key: ${{ matrix.target }}-${{ matrix.toolchain }}
     - uses: actions/setup-go@main
       with:
         go-version: '1.23'
